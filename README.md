@@ -226,7 +226,6 @@ Alternative Hypothesis: The model is unfair. Its RMSE differs between high and l
 Test statistic: Absolute difference in RMSE between the two groups.\
 Significance level: 0.05
 
-Results:
 RMSE High Population states: 5298.49 minutes\
 RMSE Low Population states: 3929.65 minutes\
 Observed difference: 1368.84 minutes\
