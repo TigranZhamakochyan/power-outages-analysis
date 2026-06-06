@@ -129,8 +129,8 @@ Test Statistic: TVD between the distribution of `MONTH` when duration is missing
 
 Significance Level: 0.05
 
-Observed TVD: 0.143
-P-value: 0.182
+Observed TVD: 0.143\
+P-value: 0.182\
 I fail to reject the null hypothesis. The missingness of `OUTAGE.DURATION` does not depend on `MONTH`.
 
 <iframe src="assets/tvd_month.html" width="900" height="500" frameborder="0"></iframe>
