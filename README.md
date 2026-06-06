@@ -39,7 +39,7 @@ The following cleaning steps were performed:
 
 2. **Combined date and time columns** into single `OUTAGE.START` and `OUTAGE.RESTORATION` Timestamp columns by concatenating the date and time strings and parsing with `pd.to_datetime`. The original four separate date/time columns were then dropped.
 
-3. **Replaced 0 values with NaN** in `OUTAGE.DURATION`, `CUSTOMERS.AFFECTED`, and `DEMAND.LOSS.MW`. A value of 0 in these columns is not physically meaningful — an outage cannot last 0 minutes, and 0 customers affected or 0 MW lost indicates missing data rather than a true zero.
+3. **Replaced 0 values with NaN** in `OUTAGE.DURATION`, `CUSTOMERS.AFFECTED`, and `DEMAND.LOSS.MW`. A value of 0 in these columns is not physically meaningful, because an outage cannot last 0 minutes, and 0 customers affected or 0 MW lost indicates missing data rather than a true zero.
 
 4. **Converted `YEAR` to int and `MONTH` to Int64** to fix float dtype issues caused by the Excel import. `MONTH` uses nullable integer type to preserve NaN values.
 
@@ -63,23 +63,22 @@ The plot below shows the distribution of major power outages by cause category. 
 
 <iframe src="assets/cause_bar.html" width="800" height="500" frameborder="0"></iframe>
 
-The histogram below shows outage duration in hours (excluding extreme outliers above 500 hours). The distribution is heavily right-skewed — most outages resolve within 50 hours, but a small number last hundreds of hours. This motivated using a log transformation in the final model.
+The histogram below shows outage duration in hours (excluding extreme outliers above 500 hours). The distribution is heavily right-skewed as most outages resolve within 50 hours, but a small number last hundreds of hours. This motivated using a log transformation in the final model.
 
 <iframe src="assets/duration_hist.html" width="800" height="500" frameborder="0"></iframe>
 
 ### Bivariate Analysis
 
-The box plot below shows outage duration by cause category. Fuel supply emergencies have the highest median duration (~66 hours), while intentional attacks are resolved the quickest (~2 hours median). This strongly supports using cause category as a predictor.
+The box plot below shows outage duration by cause category. Fuel supply emergencies have the highest median duration, while intentional attacks are resolved the quickest. This strongly supports using cause category as a predictor.
 
 <iframe src="assets/box_cause.html" width="800" height="500" frameborder="0"></iframe>
 
-The bar chart below shows median outage duration by month. December and September have the longest median durations (~26 hours). Interestingly, summer months do not have the longest durations, which influenced my feature engineering decisions.
-
+The bar chart below shows median outage duration by month. December and September have the longest median durations (~26 hours). Interestingly, summer months do not have the longest durations, which helped me to refuse from the idea of engineering a IS_SUMMER feature where it shows whether outage happened in Summer.
 <iframe src="assets/monthly_duration.html" width="800" height="500" frameborder="0"></iframe>
 
 ### Interesting Aggregates
 
-The table below summarizes key statistics grouped by cause category, sorted by median duration. Fuel supply emergencies last longest on average (225 hours mean, 66 hours median), while islanding outages are resolved the fastest. Note the large gap between mean and median for fuel supply emergencies, indicating extreme outliers.
+The table below summarizes key statistics grouped by cause category, sorted by median duration. Fuel supply emergencies last longest on average (225 hours mean, 66 hours median), while islanding outages are resolved the fastest. Additionally, the large gap between mean and median for fuel supply emergencies, indicates that there are extreme outliers.
 
 | CAUSE.CATEGORY | Count | Mean Duration (hours) | Median Duration (hours) | Mean Customers Affected |
 |:-------------------------------|------:|----------------------:|------------------------:|------------------------:|
@@ -97,23 +96,42 @@ The table below summarizes key statistics grouped by cause category, sorted by m
 
 ### NMAR Analysis
 
-I believe the `DEMAND.LOSS.MW` column is likely **NMAR**. This column has 901 missing values — more than any other key column. The missingness is likely related to the value itself: large demand losses are hard to measure accurately, so companies may not spend resources estimating them. Additionally, smaller outages may not have had demand loss recorded at all because it wasn't considered significant enough. To make this MAR, we would need additional data about which utility companies reported each outage and their individual reporting practices.
+I believe the `DEMAND.LOSS.MW` column is likely **NMAR**. This column has 901 missing values, which is more than any other key column. The missingness is likely related to the value itself, as large demand losses are hard to measure accurately, so companies may not spend resources estimating them. Additionally, smaller outages may not have had demand loss recorded at all because it wasn't considered significant enough. To make this MAR, we would need additional data about which utility companies reported each outage and their individual reporting practices.
 
 ### Missingness Dependency
 
 I analyzed whether the missingness of `OUTAGE.DURATION` depends on other columns using permutation tests with TVD as the test statistic.
 
 **Test 1: Missingness of `OUTAGE.DURATION` vs `CAUSE.CATEGORY`**
+
+**Null Hypothesis:** The missingness of `OUTAGE.DURATION` is independent of `CAUSE.CATEGORY`. Any observed difference is due to random chance.
+
+**Alternative Hypothesis:** The missingness of `OUTAGE.DURATION` depends on `CAUSE.CATEGORY`.
+
+**Test Statistic:** TVD between the distribution of `CAUSE.CATEGORY` when duration is missing vs not missing.
+
+**Significance Level:** 0.05
+
 - Observed TVD: 0.469
 - P-value: 0.0
-- At significance level 0.05, we reject the null hypothesis. The missingness of `OUTAGE.DURATION` **does depend** on `CAUSE.CATEGORY` — intentional attacks are much more likely to have missing duration than severe weather outages.
+- We reject the null hypothesis. The missingness of `OUTAGE.DURATION` **does depend** on `CAUSE.CATEGORY`, which means intentional attacks are much more likely to have missing duration than severe weather outages.
+
 
 <iframe src="assets/tvd_cause.html" width="900" height="500" frameborder="0"></iframe>
 
 **Test 2: Missingness of `OUTAGE.DURATION` vs `MONTH`**
+
+**Null Hypothesis:** The missingness of `OUTAGE.DURATION` is independent of `MONTH`. Any observed difference is due to random chance.
+
+**Alternative Hypothesis:** The missingness of `OUTAGE.DURATION` depends on `MONTH`.
+
+**Test Statistic:** TVD between the distribution of `MONTH` when duration is missing vs not missing.
+
+**Significance Level:** 0.05
+
 - Observed TVD: 0.143
 - P-value: 0.184
-- At significance level 0.05, we fail to reject the null hypothesis. The missingness of `OUTAGE.DURATION` **does not depend** on `MONTH`.
+- We fail to reject the null hypothesis. The missingness of `OUTAGE.DURATION` **does not depend** on `MONTH`.
 
 <iframe src="assets/tvd_month.html" width="900" height="500" frameborder="0"></iframe>
 
