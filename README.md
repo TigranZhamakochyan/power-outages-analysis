@@ -227,10 +227,10 @@ The improvement comes from using more informative features, Random Forest's abil
 **Significance level:** 0.05
 
 **Results:**
-RMSE High Population: 5941.34 minutes
-RMSE Low Population: 3039.46 minutes
+RMSE High Population states: 5941.34 minutes
+RMSE Low Population states: 3039.46 minutes
 Observed difference: 2901.88 minutes
-P-value: 0.203
+P-value: 0.211
 
 Since the p-value (0.203) is greater than 0.05, I fail to reject the null hypothesis. The difference in RMSE between high and low population states is not statistically significant and it could occur by random chance. My model does not appear to systematically perform worse for either group.
 
