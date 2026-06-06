@@ -112,9 +112,9 @@ Test Statistic: TVD between the distribution of `CAUSE.CATEGORY` when duration i
 
 Significance Level: 0.05
 
-Observed TVD: 0.469
-P-value: 0.0
-We reject the null hypothesis. The missingness of `OUTAGE.DURATION` depends on `CAUSE.CATEGORY`, which means intentional attacks are much more likely to have missing duration than severe weather outages.
+Observed TVD: 0.469\
+P-value: 0.0\
+I reject the null hypothesis. The missingness of `OUTAGE.DURATION` depends on `CAUSE.CATEGORY`, which means intentional attacks are much more likely to have missing duration than severe weather outages.
 
 
 <iframe src="assets/tvd_cause.html" width="900" height="500" frameborder="0"></iframe>
@@ -131,7 +131,7 @@ Significance Level: 0.05
 
 Observed TVD: 0.143
 P-value: 0.182
-We fail to reject the null hypothesis. The missingness of `OUTAGE.DURATION` **does not depend** on `MONTH`.
+I fail to reject the null hypothesis. The missingness of `OUTAGE.DURATION` does not depend on `MONTH`.
 
 <iframe src="assets/tvd_month.html" width="900" height="500" frameborder="0"></iframe>
 
