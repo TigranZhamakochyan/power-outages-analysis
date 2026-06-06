@@ -33,17 +33,16 @@ The dataset contains **1,534 rows**. The relevant columns are:
 
 ### Data Cleaning
 
-The following cleaning steps were performed:
 
-1. **Loaded the Excel file with skiprows=5** to skip the metadata rows at the top of the raw file, then dropped the extra header row and the `variables` column that came with the original dataset format.
+1. I loaded the Excel file with skiprows=5 to skip the metadata rows at the top of the raw file, then dropped the extra header row and the `variables` column that came with the original dataset format.
 
-2. **Combined date and time columns** into single `OUTAGE.START` and `OUTAGE.RESTORATION` Timestamp columns by concatenating the date and time strings and parsing with `pd.to_datetime`. The original four separate date/time columns were then dropped.
+2. I combined date and time columns into single. I used `OUTAGE.START` and `OUTAGE.RESTORATION` timestamp columns by concatenating the date and time strings and parsing with `pd.to_datetime`. Then I dropped the original four separate date/time columns.
 
-3. **Replaced 0 values with NaN** in `OUTAGE.DURATION`, `CUSTOMERS.AFFECTED`, and `DEMAND.LOSS.MW`. A value of 0 in these columns is not physically meaningful, because an outage cannot last 0 minutes, and 0 customers affected or 0 MW lost indicates missing data rather than a true zero.
+3. I replaced all the 0 values with NaN in `OUTAGE.DURATION`, `CUSTOMERS.AFFECTED`, and `DEMAND.LOSS.MW` columns. A value of 0 in these columns is not physically meaningful, because an outage cannot last 0 minutes, and 0 customers affected or 0 MW lost indicates missing data rather than a true zero.
 
-4. **Converted `YEAR` to int and `MONTH` to Int64** to fix float dtype issues caused by the Excel import. `MONTH` uses nullable integer type to preserve NaN values.
+4. I also converted `YEAR` to int and `MONTH` to Int64 to fix float dtype issues caused by the Excel import. `MONTH` uses nullable integer type to preserve NaN values.
 
-5. **Kept only the 21 most relevant columns** I reduced it from the original 56 columns to those useful for analysis and modeling, including cause, climate, geographic, economic, and time-related features.
+5. I kept only the 21 of the most relevant columns I reduced it from the original 56 columns to those useful for analysis and modeling, including cause, climate, geographic, economic, and time-related features.
 
 These cleaning steps ensure that missing data is properly represented as NaN, that timestamps are usable for feature extraction, and that the DataFrame is focused on relevant information.
 
@@ -73,7 +72,8 @@ The box plot below shows outage duration by cause category. Fuel supply emergenc
 
 <iframe src="assets/box_cause.html" width="800" height="500" frameborder="0"></iframe>
 
-The bar chart below shows median outage duration by month. December and September have the longest median durations (~26 hours). Interestingly, summer months do not have the longest durations, which helped me to refuse from the idea of engineering a IS_SUMMER feature where it shows whether outage happened in Summer.
+The bar chart below shows median outage duration by month. December and September have the longest median durations (~26 hours). Interestingly, after creating this graph I looked at my model and deleted an engineered feature IS_SUMMER which provided bianary information whether the month is Summer. Before this graph I used to think that in Summers power outages happen more often.
+
 <iframe src="assets/monthly_duration.html" width="800" height="500" frameborder="0"></iframe>
 
 ### Interesting Aggregates
@@ -227,11 +227,11 @@ The improvement comes from using more informative features, Random Forest's abil
 **Significance level:** 0.05
 
 **Results:**
-RMSE High Population states: 5941.34 minutes
-RMSE Low Population states: 3039.46 minutes
-Observed difference: 2901.88 minutes
-P-value: 0.211
+**RMSE High Population states:** 5298.49 minutes
+**RMSE Low Population states:** 3929.65 minutes
+**Observed difference:** 1368.84 minutes
+**P-value:**  0.212
 
-Since the p-value (0.203) is greater than 0.05, I fail to reject the null hypothesis. The difference in RMSE between high and low population states is not statistically significant and it could occur by random chance. My model does not appear to systematically perform worse for either group.
+Since the p-value (0.212) is greater than 0.05, I fail to reject the null hypothesis. The difference in RMSE between high and low population states is not statistically significant and it could occur by random chance. My model does not appear to systematically perform worse for either group.
 
 <iframe src="assets/fairness.html" width="900" height="500" frameborder="0"></iframe>
