@@ -42,7 +42,7 @@ The dataset contains **1,534 rows**. The relevant columns are:
 
 4. I also converted `YEAR` to int and `MONTH` to Int64 to fix float dtype issues caused by the Excel import. `MONTH` uses nullable integer type to preserve NaN values.
 
-5. I kept only the 21 of the most relevant columns I reduced it from the original 56 columns to those useful for analysis and modeling, including cause, climate, geographic, economic, and time-related features.
+5. I kept only the 21 of the most relevant columns. I reduced it from the original 56 columns to those useful for analysis and modeling, including cause, climate, geographic, economic, and time-related features.
 
 These cleaning steps ensure that missing data is properly represented as NaN, that timestamps are usable for feature extraction, and that the DataFrame is focused on relevant information.
 
@@ -96,7 +96,7 @@ The table below summarizes key statistics grouped by cause category, sorted by m
 
 ### NMAR Analysis
 
-I believe the `DEMAND.LOSS.MW` column is likely **NMAR**. This column has 901 missing values, which is more than any other key column. The missingness is likely related to the value itself, as large demand losses are hard to measure accurately, so companies may not spend resources estimating them. Additionally, smaller outages may not have had demand loss recorded at all because it wasn't considered significant enough. To make this MAR, we would need additional data about which utility companies reported each outage and their individual reporting practices.
+I believe the `DEMAND.LOSS.MW` column is likely NMAR. This column has 901 missing values, which is more than any other key column. The missingness is likely related to the value itself, as large demand losses are hard to measure accurately, so companies may not spend resources estimating them. Additionally, smaller outages may not have had demand loss recorded at all because it wasn't considered significant enough. To make this an MAR, we would need additional data about which utility companies reported each outage and their individual reporting practices.
 
 ### Missingness Dependency
 
@@ -104,33 +104,33 @@ I analyzed whether the missingness of `OUTAGE.DURATION` depends on other columns
 
 **Test 1: Missingness of `OUTAGE.DURATION` vs `CAUSE.CATEGORY`**
 
-**Null Hypothesis:** The missingness of `OUTAGE.DURATION` is independent of `CAUSE.CATEGORY`. Any observed difference is due to random chance.
+Null Hypothesis: The missingness of `OUTAGE.DURATION` is independent of `CAUSE.CATEGORY`. Any observed difference is due to random chance.
 
-**Alternative Hypothesis:** The missingness of `OUTAGE.DURATION` depends on `CAUSE.CATEGORY`.
+Alternative Hypothesis: The missingness of `OUTAGE.DURATION` depends on `CAUSE.CATEGORY`.
 
-**Test Statistic:** TVD between the distribution of `CAUSE.CATEGORY` when duration is missing vs not missing.
+Test Statistic: TVD between the distribution of `CAUSE.CATEGORY` when duration is missing vs not missing.
 
-**Significance Level:** 0.05
+Significance Level: 0.05
 
 Observed TVD: 0.469
 P-value: 0.0
-We reject the null hypothesis. The missingness of `OUTAGE.DURATION` **does depend** on `CAUSE.CATEGORY`, which means intentional attacks are much more likely to have missing duration than severe weather outages.
+We reject the null hypothesis. The missingness of `OUTAGE.DURATION` depends on `CAUSE.CATEGORY`, which means intentional attacks are much more likely to have missing duration than severe weather outages.
 
 
 <iframe src="assets/tvd_cause.html" width="900" height="500" frameborder="0"></iframe>
 
 **Test 2: Missingness of `OUTAGE.DURATION` vs `MONTH`**
 
-**Null Hypothesis:** The missingness of `OUTAGE.DURATION` is independent of `MONTH`. Any observed difference is due to random chance.
+Null Hypothesis: The missingness of `OUTAGE.DURATION` is independent of `MONTH`. Any observed difference is due to random chance.
 
-**Alternative Hypothesis:** The missingness of `OUTAGE.DURATION` depends on `MONTH`.
+Alternative Hypothesis: The missingness of `OUTAGE.DURATION` depends on `MONTH`.
 
-**Test Statistic:** TVD between the distribution of `MONTH` when duration is missing vs not missing.
+Test Statistic: TVD between the distribution of `MONTH` when duration is missing vs not missing.
 
-**Significance Level:** 0.05
+Significance Level: 0.05
 
 Observed TVD: 0.143
-P-value: 0.184
+P-value: 0.182
 We fail to reject the null hypothesis. The missingness of `OUTAGE.DURATION` **does not depend** on `MONTH`.
 
 <iframe src="assets/tvd_month.html" width="900" height="500" frameborder="0"></iframe>
@@ -139,21 +139,21 @@ We fail to reject the null hypothesis. The missingness of `OUTAGE.DURATION` **do
 
 ## Hypothesis Testing
 
-**Null Hypothesis:** Severe weather outages have the same mean duration as non-weather outages. Any observed difference is due to random chance.
+Null Hypothesis: Severe weather outages have the same mean duration as non-weather outages. Any observed difference is due to random chance.
 
-**Alternative Hypothesis:** Severe weather outages last longer on average than non-weather outages.
+Alternative Hypothesis: Severe weather outages last longer on average than non-weather outages.
 
-**Test Statistic:** Difference in group means (severe weather mean − non-weather mean). This is appropriate because we are comparing a quantitative variable across two groups and have a directional alternative hypothesis.
+Test Statistic: Difference in group means (severe weather mean − non-weather mean). This is appropriate because we are comparing a quantitative variable across two groups and have a directional alternative hypothesis.
 
-**Significance Level:** 0.05
+Significance Level: 0.05
 
 **Results:**
-Mean duration severe weather: 3899.7 minutes
-Mean duration non-weather: 1499.9 minutes
-Observed difference: 2399.9 minutes
-P-value: 0.0 (0 out of 10,000 permutations exceeded the observed difference)
+Mean duration severe weather: 3899.71 minutes
+Mean duration non-weather: 1499.852 minutes
+Observed difference: 2399.857 minutes
+P-value: 0.0
 
-We reject the null hypothesis. The data is consistent with the alternative hypothesis that severe weather outages last significantly longer than non-weather outages. Note that this does not prove causation — only that the association is unlikely due to chance.
+I reject the null hypothesis. The data is consistent with the alternative hypothesis that severe weather outages last significantly longer than non-weather outages. Note that this does not prove causation — only that the association is unlikely due to chance.
 
 <iframe src="assets/hyp_test.html" width="900" height="500" frameborder="0"></iframe>
 
@@ -161,15 +161,15 @@ We reject the null hypothesis. The data is consistent with the alternative hypot
 
 ## Framing a Prediction Problem
 
-**Prediction Problem:** Predict the duration of a major power outage (`OUTAGE.DURATION`) in minutes.
+Prediction Problem: Predict the duration of a major power outage (`OUTAGE.DURATION`) in minutes.
 
-**Type:** Regression, since outage duration is a continuous numerical variable with no natural categories.
+Type: Regression, since outage duration is a continuous numerical variable with no natural categories.
 
-**Response Variable:** `OUTAGE.DURATION`. I chose this because it directly answers what factors determine how long a power outage will last? Duration is also the most actionable metric for utility companies and emergency responders who need to plan resource allocation.
+Response Variable: `OUTAGE.DURATION`. I chose this because it directly answers what factors determine how long a power outage will last. Duration is also the most actionable metric for utility companies and emergency responders who need to plan resource allocation.
 
-**Metric:** I chose RMSE over MAE because outage duration is heavily right-skewed with extreme outliers, which means some outages last hundreds of hours. RMSE penalizes these large errors more heavily, which reflects the real-world cost of severely underestimating how long an outage will last. Predicting a 10-hour outage as 2 hours is far more harmful than predicting a 3-hour outage as 2 hours, and RMSE captures this asymmetry better than MAE.
+Metric: I chose RMSE over MAE because outage duration is heavily right-skewed with extreme outliers, which means some outages last hundreds of hours. RMSE penalizes these large errors more heavily, which reflects the real-world cost of severely underestimating how long an outage will last. Predicting a 10-hour outage as 2 hours is far more harmful than predicting a 3-hour outage as 2 hours, and RMSE captures this asymmetry better than MAE.
 
-**Time of Prediction Justification:** At the moment an outage begins, a utility company would know the cause of the outage, the geographic location and climate region, the current climate conditions, and the time of day and day of week. They would NOT know the restoration time, the total duration, or how many customers will ultimately be affected. Therefore, I only use features that are known at the start of the outage. I excluded `OUTAGE.RESTORATION` and `OUTAGE.DURATION` itself from the features, and I extracted only the start time components (`OUTAGE.HOUR`, `IS_WEEKEND`, `IS_BUSINESS_HOURS`) from `OUTAGE.START`.
+Time of Prediction Justification: At the moment an outage begins, a utility company would know the cause of the outage, the geographic location and climate region, the current climate conditions, and the time of day and day of week. They would for sure not know the restoration time, the total duration, or how many customers will ultimately be affected. Therefore, I only use features that are known at the start of the outage. I excluded `OUTAGE.RESTORATION` and `OUTAGE.DURATION` itself from the features, and I extracted only the start time components (`OUTAGE.HOUR`, `IS_WEEKEND`, `IS_BUSINESS_HOURS`) from `OUTAGE.START`.
 
 ---
 
@@ -177,10 +177,10 @@ We reject the null hypothesis. The data is consistent with the alternative hypot
 
 The baseline model uses two features with Linear Regression:
 
-`CAUSE.CATEGORY` is a **nominal**, thus I encoded it with OneHotEncoder and used (drop='first') since it has no natural order
-`MONTH` is an **ordinal**, thus I left it as-is since it is already numerical
+`CAUSE.CATEGORY` is nominal, thus I encoded it with OneHotEncoder and used (drop='first') since it has no natural order
+`MONTH` is ordinal, thus I left it as-is since it is already numerical
 
-**Performance:** Baseline RMSE = **5289.73 minutes** (~3.7 days). This is a bad result, which is a little dissapointing. The model essentially learns average duration per cause category and month, ignoring many important factors like location, climate, and time of day, which will be later added for final model.
+Performance: Baseline RMSE is 5289.73 minutes (~3.7 days). This is a bad result, which is a little dissapointing. The model essentially learns average duration per cause category and month, ignoring many important factors like location, climate, and time of day, which will be later added for final model.
 
 ---
 
@@ -188,25 +188,25 @@ The baseline model uses two features with Linear Regression:
 
 The final model uses RandomForestRegressor with the following features:
 
-**Nominal (OneHotEncoded):** `CAUSE.CATEGORY`, `CLIMATE.REGION`, `CLIMATE.CATEGORY` as different regions and climate types have different infrastructure and repair capabilities.
+Nominal (OneHotEncoded): `CAUSE.CATEGORY`, `CLIMATE.REGION`, `CLIMATE.CATEGORY` as different regions and climate types have different infrastructure and repair capabilities.
 
-**Quantitative (StandardScaled):** `ANOMALY.LEVEL`, `CUSTOMERS.AFFECTED`, `POPPCT_URBAN` as the climate anomaly intensity, outage scale, and urbanization all affect repair speed.
+Quantitative (StandardScaled): `ANOMALY.LEVEL`, `CUSTOMERS.AFFECTED`, `POPPCT_URBAN` as the climate anomaly intensity, outage scale, and urbanization all affect repair speed.
 
-**Engineered features:**
+Engineered features:
 `LOG_POPULATION` is a log transform of population, which as the graphs showed is heavily right-skewed
 `MONTH_SIN` + `MONTH_COS` I did cyclical encoding of month so December and January are treated as close together
 `HOUR_SIN` + `HOUR_COS` are also cyclical encoded of outage start hour, which helps us to capturing day/night crew availability
 `IS_WEEKEND` is a bianary feature that helps us to use the fact that weekend outages may last longer due to fewer available crews
 `IS_BUSINESS_HOURS` is also a bianary feature and is used as outages starting during business hours have full crews available immediately
 
-**Hyperparameter tuning:** GridSearchCV with 5-fold cross-validation over n_estimators, max_depth, min_samples_leaf, and criterion.
+Hyperparameter tuning: GridSearchCV with 5-fold cross-validation over n_estimators, max_depth, min_samples_leaf, and criterion.
 
-**Best hyperparameters:** criterion=squared_error, max_depth=None, min_samples_leaf=1, n_estimators=300
+Best hyperparameters were identified criterion=squared_error, max_depth=None, min_samples_leaf=1, n_estimators=300
 
-**Performance:**
-Final Model RMSE: **4751.60 minutes**
-Baseline RMSE: **5289.73 minutes**
-Improvement: **538.13 minutes** (about 10% better)
+Performance:
+Final Model RMSE: 4751.60 minutes
+Baseline RMSE: 5289.73 minutes
+Improvement: 538.13 minutes (about 10% better)
 
 The improvement comes from using more informative features, Random Forest's ability to capture non-linear relationships, and proper cyclical and log encodings.
 
@@ -214,23 +214,23 @@ The improvement comes from using more informative features, Random Forest's abil
 
 ## Fairness Analysis
 
-**Group X:** High population states (POPULATION above median)\
-**Group Y:** Low population states (POPULATION below median)
+Group X: High population states (POPULATION above median)
+Group Y: Low population states (POPULATION below median)
 
-**Evaluation metric:** RMSE
+Evaluation metric: RMSE
 
-**Null Hypothesis:** The model is fair. Its RMSE for high and low population states are roughly the same, and any differences are due to random chance.
+Null Hypothesis: The model is fair. Its RMSE for high and low population states are roughly the same, and any differences are due to random chance.
 
-**Alternative Hypothesis:** The model is unfair. Its RMSE differs between high and low population states.
+Alternative Hypothesis: The model is unfair. Its RMSE differs between high and low population states.
 
-**Test statistic:** Absolute difference in RMSE between the two groups.
-**Significance level:** 0.05
+Test statistic: Absolute difference in RMSE between the two groups.
+Significance level: 0.05
 
-**Results:**
-**RMSE High Population states:** 5298.49 minutes
-**RMSE Low Population states:** 3929.65 minutes
-**Observed difference:** 1368.84 minutes
-**P-value:**  0.212
+Results:
+RMSE High Population states: 5298.49 minutes
+**RMSE Low Population states: 3929.65 minutes
+Observed difference: 1368.84 minutes
+P-value: 0.212
 
 Since the p-value (0.212) is greater than 0.05, I fail to reject the null hypothesis. The difference in RMSE between high and low population states is not statistically significant and it could occur by random chance. My model does not appear to systematically perform worse for either group.
 
