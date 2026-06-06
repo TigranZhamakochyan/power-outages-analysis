@@ -1,4 +1,4 @@
-# When the Lights Go Out: Predicting Power Outage Duration in the U.S.
+# Lights out : Predicting Power Outage Duration in the U.S
 
 **By Tigran Zhamakochyan**
 
@@ -24,6 +24,8 @@ The dataset contains **1,534 rows**. The relevant columns are:
 | `MONTH` | Month the outage started (captures seasonality) |
 | `POPULATION` | State population at time of outage |
 | `NERC.REGION` | North American Electric Reliability Corporation region |
+| `CLIMATE.CATEGORY` | Climate classification (warm/cold/normal) at time of outage |
+| `OUTAGE.START` | Timestamp of when the outage began (used to extract hour and day of week) |
 
 ---
 
@@ -33,10 +35,17 @@ The dataset contains **1,534 rows**. The relevant columns are:
 
 The following cleaning steps were performed:
 
-1. **Combined date and time columns** into single `OUTAGE.START` and `OUTAGE.RESTORATION` timestamp columns, then dropped the original four separate columns.
-2. **Replaced 0 values with NaN** in `OUTAGE.DURATION`, `CUSTOMERS.AFFECTED`, and `DEMAND.LOSS.MW` since a duration or customer count of 0 is not physically meaningful.
-3. **Converted `YEAR` to int and `MONTH` to Int64** to fix float dtype issues from the Excel import.
-4. **Kept only relevant columns** — reduced from 56 columns to 22 most useful ones.
+1. **Loaded the Excel file with skiprows=5** to skip the metadata rows at the top of the raw file, then dropped the extra header row and the `variables` column that came with the original dataset format.
+
+2. **Combined date and time columns** into single `OUTAGE.START` and `OUTAGE.RESTORATION` Timestamp columns by concatenating the date and time strings and parsing with `pd.to_datetime`. The original four separate date/time columns were then dropped.
+
+3. **Replaced 0 values with NaN** in `OUTAGE.DURATION`, `CUSTOMERS.AFFECTED`, and `DEMAND.LOSS.MW`. A value of 0 in these columns is not physically meaningful — an outage cannot last 0 minutes, and 0 customers affected or 0 MW lost indicates missing data rather than a true zero.
+
+4. **Converted `YEAR` to int and `MONTH` to Int64** to fix float dtype issues caused by the Excel import. `MONTH` uses nullable integer type to preserve NaN values.
+
+5. **Kept only the 21 most relevant columns** I reduced it from the original 56 columns to those useful for analysis and modeling, including cause, climate, geographic, economic, and time-related features.
+
+These cleaning steps ensure that missing data is properly represented as NaN, that timestamps are usable for feature extraction, and that the DataFrame is focused on relevant information.
 
 Here is the head of the cleaned DataFrame:
 
