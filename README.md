@@ -112,9 +112,9 @@ I analyzed whether the missingness of `OUTAGE.DURATION` depends on other columns
 
 **Significance Level:** 0.05
 
-- Observed TVD: 0.469
-- P-value: 0.0
-- We reject the null hypothesis. The missingness of `OUTAGE.DURATION` **does depend** on `CAUSE.CATEGORY`, which means intentional attacks are much more likely to have missing duration than severe weather outages.
+Observed TVD: 0.469
+P-value: 0.0
+We reject the null hypothesis. The missingness of `OUTAGE.DURATION` **does depend** on `CAUSE.CATEGORY`, which means intentional attacks are much more likely to have missing duration than severe weather outages.
 
 
 <iframe src="assets/tvd_cause.html" width="900" height="500" frameborder="0"></iframe>
@@ -129,9 +129,9 @@ I analyzed whether the missingness of `OUTAGE.DURATION` depends on other columns
 
 **Significance Level:** 0.05
 
-- Observed TVD: 0.143
-- P-value: 0.184
-- We fail to reject the null hypothesis. The missingness of `OUTAGE.DURATION` **does not depend** on `MONTH`.
+Observed TVD: 0.143
+P-value: 0.184
+We fail to reject the null hypothesis. The missingness of `OUTAGE.DURATION` **does not depend** on `MONTH`.
 
 <iframe src="assets/tvd_month.html" width="900" height="500" frameborder="0"></iframe>
 
@@ -148,10 +148,10 @@ I analyzed whether the missingness of `OUTAGE.DURATION` depends on other columns
 **Significance Level:** 0.05
 
 **Results:**
-- Mean duration severe weather: 3899.7 minutes
-- Mean duration non-weather: 1499.9 minutes
-- Observed difference: 2399.9 minutes
-- P-value: 0.0 (0 out of 10,000 permutations exceeded the observed difference)
+Mean duration severe weather: 3899.7 minutes
+Mean duration non-weather: 1499.9 minutes
+Observed difference: 2399.9 minutes
+P-value: 0.0 (0 out of 10,000 permutations exceeded the observed difference)
 
 We reject the null hypothesis. The data is consistent with the alternative hypothesis that severe weather outages last significantly longer than non-weather outages. Note that this does not prove causation — only that the association is unlikely due to chance.
 
@@ -163,13 +163,13 @@ We reject the null hypothesis. The data is consistent with the alternative hypot
 
 **Prediction Problem:** Predict the duration of a major power outage (`OUTAGE.DURATION`) in minutes.
 
-**Type:** Regression — duration is a continuous numerical variable.
+**Type:** Regression, since outage duration is a continuous numerical variable with no natural categories.
 
-**Response Variable:** `OUTAGE.DURATION`. This directly answers our central question about what factors predict how long an outage will last.
+**Response Variable:** `OUTAGE.DURATION`. I chose this because it directly answers what factors determine how long a power outage will last? Duration is also the most actionable metric for utility companies and emergency responders who need to plan resource allocation.
 
-**Metric:** RMSE (Root Mean Squared Error). RMSE penalizes large errors more heavily than MAE, which is important here since severely underestimating a long outage has real consequences for resource allocation.
+**Metric:** I chose RMSE over MAE because outage duration is heavily right-skewed with extreme outliers, which means some outages last hundreds of hours. RMSE penalizes these large errors more heavily, which reflects the real-world cost of severely underestimating how long an outage will last. Predicting a 10-hour outage as 2 hours is far more harmful than predicting a 3-hour outage as 2 hours, and RMSE captures this asymmetry better than MAE.
 
-**Time of prediction justification:** At the moment an outage begins, we know the location, cause, climate conditions, and time of day/year. We do NOT know the restoration time or duration. All features used in the model are available at the start of the outage.
+**Time of Prediction Justification:** At the moment an outage begins, a utility company would know the cause of the outage, the geographic location and climate region, the current climate conditions, and the time of day and day of week. They would NOT know the restoration time, the total duration, or how many customers will ultimately be affected. Therefore, I only use features that are known at the start of the outage. I excluded `OUTAGE.RESTORATION` and `OUTAGE.DURATION` itself from the features, and I extracted only the start time components (`OUTAGE.HOUR`, `IS_WEEKEND`, `IS_BUSINESS_HOURS`) from `OUTAGE.START`.
 
 ---
 
@@ -177,12 +177,10 @@ We reject the null hypothesis. The data is consistent with the alternative hypot
 
 The baseline model uses two features with Linear Regression:
 
-- `CAUSE.CATEGORY` — **nominal**, encoded with OneHotEncoder (drop='first') since it has no natural order
-- `MONTH` — **ordinal**, left as-is since it is already numerical
+`CAUSE.CATEGORY` is a **nominal**, thus I encoded it with OneHotEncoder and used (drop='first') since it has no natural order
+`MONTH` is an **ordinal**, thus I left it as-is since it is already numerical
 
-All steps are implemented in a single sklearn Pipeline.
-
-**Performance:** Baseline RMSE = **5289.73 minutes** (~3.7 days). This is a poor result, which is expected given only 2 simple features. The model essentially learns average duration per cause category and month, ignoring many important factors like location, climate, and time of day.
+**Performance:** Baseline RMSE = **5289.73 minutes** (~3.7 days). This is a bad result, which is a little dissapointing. The model essentially learns average duration per cause category and month, ignoring many important factors like location, climate, and time of day, which will be later added for final model.
 
 ---
 
@@ -190,25 +188,25 @@ All steps are implemented in a single sklearn Pipeline.
 
 The final model uses RandomForestRegressor with the following features:
 
-**Nominal (OneHotEncoded):** `CAUSE.CATEGORY`, `CLIMATE.REGION`, `CLIMATE.CATEGORY` — different regions and climate types have different infrastructure and repair capabilities.
+**Nominal (OneHotEncoded):** `CAUSE.CATEGORY`, `CLIMATE.REGION`, `CLIMATE.CATEGORY` as different regions and climate types have different infrastructure and repair capabilities.
 
-**Quantitative (StandardScaled):** `ANOMALY.LEVEL`, `CUSTOMERS.AFFECTED`, `POPPCT_URBAN` — climate anomaly intensity, outage scale, and urbanization all affect repair speed.
+**Quantitative (StandardScaled):** `ANOMALY.LEVEL`, `CUSTOMERS.AFFECTED`, `POPPCT_URBAN` as the climate anomaly intensity, outage scale, and urbanization all affect repair speed.
 
 **Engineered features:**
-- `LOG_POPULATION` — log transform of population, which is heavily right-skewed
-- `MONTH_SIN` + `MONTH_COS` — cyclical encoding of month so December and January are treated as close together
-- `HOUR_SIN` + `HOUR_COS` — cyclical encoding of outage start hour, capturing day/night crew availability
-- `IS_WEEKEND` — weekend outages may last longer due to fewer available crews
-- `IS_BUSINESS_HOURS` — outages starting during business hours have full crews available immediately
+`LOG_POPULATION` is a log transform of population, which as the graphs showed is heavily right-skewed
+`MONTH_SIN` + `MONTH_COS` I did cyclical encoding of month so December and January are treated as close together
+`HOUR_SIN` + `HOUR_COS` are also cyclical encoded of outage start hour, which helps us to capturing day/night crew availability
+`IS_WEEKEND` is a bianary feature that helps us to use the fact that weekend outages may last longer due to fewer available crews
+`IS_BUSINESS_HOURS` is also a bianary feature and is used as outages starting during business hours have full crews available immediately
 
 **Hyperparameter tuning:** GridSearchCV with 5-fold cross-validation over n_estimators, max_depth, min_samples_leaf, and criterion.
 
 **Best hyperparameters:** criterion=squared_error, max_depth=None, min_samples_leaf=1, n_estimators=300
 
 **Performance:**
-- Final Model RMSE: **4751.60 minutes**
-- Baseline RMSE: **5289.73 minutes**
-- Improvement: **538.13 minutes** (~10% better)
+Final Model RMSE: **4751.60 minutes**
+Baseline RMSE: **5289.73 minutes**
+Improvement: **538.13 minutes** (about 10% better)
 
 The improvement comes from using more informative features, Random Forest's ability to capture non-linear relationships, and proper cyclical and log encodings.
 
