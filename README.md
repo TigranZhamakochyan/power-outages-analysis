@@ -147,13 +147,13 @@ Test Statistic: Difference in group means (severe weather mean − non-weather m
 
 Significance Level: 0.05
 
-**Results:**
-Mean duration severe weather: 3899.71 minutes
-Mean duration non-weather: 1499.852 minutes
-Observed difference: 2399.857 minutes
+Results:\
+Mean duration severe weather: 3899.71 minutes\
+Mean duration non-weather: 1499.852 minutes\
+Observed difference: 2399.857 minutes\
 P-value: 0.0
 
-I reject the null hypothesis. The data is consistent with the alternative hypothesis that severe weather outages last significantly longer than non-weather outages. Note that this does not prove causation — only that the association is unlikely due to chance.
+I reject the null hypothesis. The data is consistent with the alternative hypothesis that severe weather outages last significantly longer than non-weather outages. This does not prove causation, but only that the association is unlikely due to chance.
 
 <iframe src="assets/hyp_test.html" width="900" height="500" frameborder="0"></iframe>
 
@@ -180,7 +180,7 @@ The baseline model uses two features with Linear Regression:
 `CAUSE.CATEGORY` is nominal, thus I encoded it with OneHotEncoder and used (drop='first') since it has no natural order
 `MONTH` is ordinal, thus I left it as-is since it is already numerical
 
-Performance: Baseline RMSE is 5289.73 minutes (~3.7 days). This is a bad result, which is a little dissapointing. The model essentially learns average duration per cause category and month, ignoring many important factors like location, climate, and time of day, which will be later added for final model.
+THe Baseline RMSE is 5289.73 minutes (~3.7 days). This is a bad result, which is a little dissapointing. The model essentially learns average duration per cause category and month, ignoring many important factors like location, climate, and time of day, which will be later added for final model.
 
 ---
 
@@ -192,20 +192,20 @@ Nominal (OneHotEncoded): `CAUSE.CATEGORY`, `CLIMATE.REGION`, `CLIMATE.CATEGORY` 
 
 Quantitative (StandardScaled): `ANOMALY.LEVEL`, `CUSTOMERS.AFFECTED`, `POPPCT_URBAN` as the climate anomaly intensity, outage scale, and urbanization all affect repair speed.
 
-Engineered features:
-`LOG_POPULATION` is a log transform of population, which as the graphs showed is heavily right-skewed
-`MONTH_SIN` + `MONTH_COS` I did cyclical encoding of month so December and January are treated as close together
-`HOUR_SIN` + `HOUR_COS` are also cyclical encoded of outage start hour, which helps us to capturing day/night crew availability
-`IS_WEEKEND` is a bianary feature that helps us to use the fact that weekend outages may last longer due to fewer available crews
+Engineered features:\
+`LOG_POPULATION` is a log transform of population, which as the graphs showed is heavily right-skewed\
+`MONTH_SIN` + `MONTH_COS` I did cyclical encoding of month so December and January are treated as close together\
+`HOUR_SIN` + `HOUR_COS` are also cyclical encoded of outage start hour, which helps us to capturing day/night crew availability\
+`IS_WEEKEND` is a bianary feature that helps us to use the fact that weekend outages may last longer due to fewer available crews\
 `IS_BUSINESS_HOURS` is also a bianary feature and is used as outages starting during business hours have full crews available immediately
 
-Hyperparameter tuning: GridSearchCV with 5-fold cross-validation over n_estimators, max_depth, min_samples_leaf, and criterion.
+I used GridSearchCV with 5-fold cross-validation over n_estimators, max_depth, min_samples_leaf, and criterion.
 
 Best hyperparameters were identified criterion=squared_error, max_depth=None, min_samples_leaf=1, n_estimators=300
 
-Performance:
-Final Model RMSE: 4751.60 minutes
-Baseline RMSE: 5289.73 minutes
+
+Final Model RMSE: 4751.60 minutes\
+Baseline RMSE: 5289.73 minutes\
 Improvement: 538.13 minutes (about 10% better)
 
 The improvement comes from using more informative features, Random Forest's ability to capture non-linear relationships, and proper cyclical and log encodings.
@@ -223,13 +223,13 @@ Null Hypothesis: The model is fair. Its RMSE for high and low population states 
 
 Alternative Hypothesis: The model is unfair. Its RMSE differs between high and low population states.
 
-Test statistic: Absolute difference in RMSE between the two groups.
+Test statistic: Absolute difference in RMSE between the two groups.\
 Significance level: 0.05
 
 Results:
-RMSE High Population states: 5298.49 minutes
-**RMSE Low Population states: 3929.65 minutes
-Observed difference: 1368.84 minutes
+RMSE High Population states: 5298.49 minutes\
+RMSE Low Population states: 3929.65 minutes\
+Observed difference: 1368.84 minutes\
 P-value: 0.212
 
 Since the p-value (0.212) is greater than 0.05, I fail to reject the null hypothesis. The difference in RMSE between high and low population states is not statistically significant and it could occur by random chance. My model does not appear to systematically perform worse for either group.
