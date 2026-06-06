@@ -214,24 +214,24 @@ The improvement comes from using more informative features, Random Forest's abil
 
 ## Fairness Analysis
 
-**Group X:** High population states (POPULATION above median)
+**Group X:** High population states (POPULATION above median)\
 **Group Y:** Low population states (POPULATION below median)
 
 **Evaluation metric:** RMSE
 
-**Null Hypothesis:** Our model is fair. Its RMSE for high and low population states are roughly the same, and any differences are due to random chance.
+**Null Hypothesis:** The model is fair. Its RMSE for high and low population states are roughly the same, and any differences are due to random chance.
 
-**Alternative Hypothesis:** Our model is unfair. Its RMSE differs between high and low population states.
+**Alternative Hypothesis:** The model is unfair. Its RMSE differs between high and low population states.
 
 **Test statistic:** Absolute difference in RMSE between the two groups.
 **Significance level:** 0.05
 
 **Results:**
-- RMSE High Population: 5941.34 minutes
-- RMSE Low Population: 3039.46 minutes
-- Observed difference: 2901.88 minutes
-- P-value: 0.203
+RMSE High Population: 5941.34 minutes
+RMSE Low Population: 3039.46 minutes
+Observed difference: 2901.88 minutes
+P-value: 0.203
 
-Since the p-value (0.203) is greater than 0.05, we fail to reject the null hypothesis. The difference in RMSE between high and low population states is not statistically significant — it could occur by random chance. Our model does not appear to systematically perform worse for either group.
+Since the p-value (0.203) is greater than 0.05, I fail to reject the null hypothesis. The difference in RMSE between high and low population states is not statistically significant and it could occur by random chance. My model does not appear to systematically perform worse for either group.
 
 <iframe src="assets/fairness.html" width="900" height="500" frameborder="0"></iframe>
